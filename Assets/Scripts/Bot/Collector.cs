@@ -33,6 +33,7 @@ public class Collector : MonoBehaviour
                 }
             }
         }
+        
         return false;
     }
 

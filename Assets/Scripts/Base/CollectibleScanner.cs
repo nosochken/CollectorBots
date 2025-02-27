@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class CollectableScanner : MonoBehaviour
@@ -10,8 +11,9 @@ public class CollectableScanner : MonoBehaviour
     [SerializeField, Min(1)] private float _scanDelay;
 
     private List<ICollectable> _discoveredCollectable;
+    private Collider[] _colliders = new Collider[100];
 
-    public event Action<IEnumerable> Scanned;
+    public event Action<IEnumerable<ICollectable>> Scanned;
 
     private void Awake()
     {
@@ -24,14 +26,14 @@ public class CollectableScanner : MonoBehaviour
 
         while (isActiveAndEnabled)
         {
-            Collider[] colliders = Physics.OverlapSphere(transform.position, _scanRadius, _collectableLayerMask);
-            Discover(colliders);
+            int size = Physics.OverlapSphereNonAlloc(transform.position, _scanRadius, _colliders, _collectableLayerMask);
+            Discover(_colliders.Take(size));
 
             yield return wait;
         }
     }
 
-    private void Discover(Collider[] colliders)
+    private void Discover(IEnumerable<Collider> colliders)
     {
         _discoveredCollectable.Clear();
 

@@ -1,1 +1,1 @@
-public class ResourceSpawner : WarehouseableSpawner<Resource> { }
+public class ResourceSpawner : CollectableSpawner<Resource> { }

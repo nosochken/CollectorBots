@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-public class Resource : MonoBehaviour, ICollectable, IWarehouseable, ISpawnable<Resource>
+public class Resource : MonoBehaviour, ICollectable, ISpawnable<Resource>
 {
     public event Action<Resource> ReadyToSpawn;
 

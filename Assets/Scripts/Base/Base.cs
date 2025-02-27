@@ -10,7 +10,7 @@ public class Base : MonoBehaviour
 
     private CollectableScanner _collectableScanner;
     private DeliveryDepartment _deliveryDepartment;
-    private Warehouse _warehouse;
+    private Storage _storage;
 
     public event Action<int> WarehouseReplenished;
 
@@ -18,16 +18,15 @@ public class Base : MonoBehaviour
     {
         _collectableScanner = GetComponent<CollectableScanner>();
         _deliveryDepartment = GetComponent<DeliveryDepartment>();
-        _warehouse = GetComponentInChildren<Warehouse>();
+        _storage = GetComponentInChildren<Storage>();
 
         SetPlacesForBots();
     }
 
     private void OnEnable()
     {
-        _collectableScanner.Scanned += _deliveryDepartment.DistributeResources;
-        _deliveryDepartment.UncollectedCollectableFound += SetBot;
-        _warehouse.Replenished += OnWarehouseReplenished;
+        _collectableScanner.Scanned += Distribute;
+        _storage.Replenished += OnWarehouseReplenished;
 
         StartMonitorBots();
     }
@@ -39,9 +38,8 @@ public class Base : MonoBehaviour
 
     private void OnDisable()
     {
-        _collectableScanner.Scanned -= _deliveryDepartment.DistributeResources;
-        _deliveryDepartment.UncollectedCollectableFound -= SetBot;
-        _warehouse.Replenished -= OnWarehouseReplenished;
+        _collectableScanner.Scanned -= Distribute;
+        _storage.Replenished -= OnWarehouseReplenished;
 
         StopMonitorBots();
     }
@@ -55,13 +53,21 @@ public class Base : MonoBehaviour
         }
     }
 
+    private void Distribute(IEnumerable<ICollectable> collectables)
+    {
+        int freeCollectables = _deliveryDepartment.Sort(collectables);
+
+        for (int i = 0; i < freeCollectables; i++)
+            SetBot();
+    }
+
     private void SetBot()
     {
         foreach (Bot bot in _bots)
         {
             if (bot.IsWorking == false)
             {
-                _deliveryDepartment.DeliverTo(_warehouse.transform.position, bot);
+                _deliveryDepartment.DeliverTo(_storage.transform.position, bot);
                 return;
             }
         }
@@ -81,6 +87,6 @@ public class Base : MonoBehaviour
 
     private void OnWarehouseReplenished()
     {
-        WarehouseReplenished?.Invoke(_warehouse.AmountOfCollectable);
+        WarehouseReplenished?.Invoke(_storage.AmountOfCollectable);
     }
 }

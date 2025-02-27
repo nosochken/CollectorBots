@@ -2,7 +2,7 @@ using System;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody))]
-public class Warehouse : MonoBehaviour
+public class Storage : MonoBehaviour
 {
     public event Action Replenished;
 
@@ -10,7 +10,7 @@ public class Warehouse : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.TryGetComponent(out IWarehouseable warehouseable))
+        if (other.TryGetComponent(out ICollectable collectable))
         {
             AmountOfCollectable++;
             Replenished?.Invoke();
