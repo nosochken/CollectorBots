@@ -1,18 +1,20 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
 
 public class Spawner<T> : MonoBehaviour where T : MonoBehaviour, ISpawnable<T>
 {
     [SerializeField] private T _prefab;
-    [SerializeField] private List<Transform> _spawnPoints;
+    //[SerializeField] private List<Transform> _spawnPoints;
+    [SerializeField] private Plane _plane;
     [SerializeField, Min(1)] private float _spawnDelay;
 
     [SerializeField, Min(1)] private int _poolCapacity;
     [SerializeField, Min(1)] private int _poolMaxSize;
 
     private ObjectPool<T> _pool;
+    
+    private int amount;
 
     private void Awake()
     {
@@ -41,6 +43,9 @@ public class Spawner<T> : MonoBehaviour where T : MonoBehaviour, ISpawnable<T>
 
     private void ActOnGet(T spawnable)
     {
+        amount++;
+        spawnable.name +=amount;
+        
         DetermineSpawnPosition(spawnable);
         spawnable.gameObject.SetActive(true);
     }
@@ -69,7 +74,9 @@ public class Spawner<T> : MonoBehaviour where T : MonoBehaviour, ISpawnable<T>
 
     private void DetermineSpawnPosition(T spawnable)
     {
-        int point = Random.Range(0, _spawnPoints.Count);
-        spawnable.transform.position = _spawnPoints[point].position;
+        Vector3 spawnPoint = _plane.GetRandomSpawnPoint(0.2f);
+        //int point = Random.Range(0, _spawnPoints.Count);
+        //spawnable.transform.position = _spawnPoints[point].position;
+        spawnable.transform.position = spawnPoint;
     }
 }

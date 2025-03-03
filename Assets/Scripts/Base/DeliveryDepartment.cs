@@ -19,7 +19,6 @@ public class DeliveryDepartment : MonoBehaviour
             if (!_collectablesInDelivery.Contains(collectable) && !_uncollectedСollectables.Contains(collectable))
                 _uncollectedСollectables.Enqueue(collectable);
         }
-
         return _uncollectedСollectables.Count;
     }
 
@@ -27,12 +26,16 @@ public class DeliveryDepartment : MonoBehaviour
     {
         ICollectable currentUncollectedCollectible = _uncollectedСollectables.Dequeue();
         _collectablesInDelivery.Add(currentUncollectedCollectible);
-
+        
+        Debug.Log($"просто лежат {_uncollectedСollectables.Count}");
+        Debug.Log($"в доставке {_collectablesInDelivery.Count}");
+        Debug.Log($"{bot.name} доставляет {currentUncollectedCollectible.Name}");
+        
         bot.DeliverTo(deliveryPosition, currentUncollectedCollectible.Position);
     }
 
     public void RemoveFromDeliveryList(ICollectable collectable)
-    {
+    { 
         _collectablesInDelivery.Remove(collectable);
     }
 }

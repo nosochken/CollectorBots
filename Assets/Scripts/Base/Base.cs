@@ -1,56 +1,68 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(CollectableScanner), typeof(DeliveryDepartment))]
+[RequireComponent(typeof(CollectableScanner), typeof(DeliveryDepartment), typeof(Creator))]
 public class Base : MonoBehaviour
 {
+    [SerializeField] private InputReader _inputReader; 
     [SerializeField] private List<Bot> _bots;
-    [SerializeField] private List<Transform> _placeOfRest;
 
     private CollectableScanner _collectableScanner;
     private DeliveryDepartment _deliveryDepartment;
     private Storage _storage;
+    private Creator _creator;
+    
+    private Coroutine _botCreationCoroutine;
+    
+    private int _botsAmountToCreateBase = 2;
 
-    public event Action<int> WarehouseReplenished;
+    public event Action<int> StorageChanged;
 
     private void Awake()
     {
         _collectableScanner = GetComponent<CollectableScanner>();
         _deliveryDepartment = GetComponent<DeliveryDepartment>();
         _storage = GetComponentInChildren<Storage>();
-
-        SetPlacesForBots();
+        _creator = GetComponent<Creator>();
     }
 
     private void OnEnable()
     {
-        _collectableScanner.Scanned += Distribute;
-        _storage.Replenished += OnWarehouseReplenished;
+        _inputReader.FlagWasPutUp += CreateNewBase;
 
-        StartMonitorBots();
+        _collectableScanner.Scanned += Distribute;
+        _storage.Changed += OnStorageChanged;
     }
 
     private void Start()
     {
+        _creator.Init(_storage);
+        
         StartCoroutine(_collectableScanner.ScanSpace());
+        
+        foreach (Bot bot in _bots)
+            bot.Init(_creator.PlaceOfRest.position);
+            
+        _botCreationCoroutine = StartCoroutine(CreateBots());
     }
 
     private void OnDisable()
     {
+        _inputReader.FlagWasPutUp -= CreateNewBase;
+        
         _collectableScanner.Scanned -= Distribute;
-        _storage.Replenished -= OnWarehouseReplenished;
+        _storage.Changed -= OnStorageChanged;
 
-        StopMonitorBots();
+        foreach(Bot bot in _bots)
+            StopMonitor(bot);
     }
 
-    private void SetPlacesForBots()
+    public void Init(Bot bot)
     {
-        if ((_bots.Count != 0) && (_placeOfRest.Count != 0))
-        {
-            for (int i = 0; i < _bots.Count; i++)
-                _bots[i].Init(_placeOfRest[i].position);
-        }
+        _bots.Add(bot);
+        StartMonitor(bot);
     }
 
     private void Distribute(IEnumerable<ICollectable> collectables)
@@ -58,35 +70,79 @@ public class Base : MonoBehaviour
         int freeCollectables = _deliveryDepartment.Sort(collectables);
 
         for (int i = 0; i < freeCollectables; i++)
-            SetBot();
+            SetBotForDelivery();
     }
-
-    private void SetBot()
+    
+    private IEnumerator CreateBots()
+    {
+        while (isActiveAndEnabled)
+        {           
+            yield return StartCoroutine(_creator.WaitResourcesForNewBot(() => 
+            {
+                StartMonitor(_creator.CreateNewBot());
+            }));
+        }
+    }
+    
+    private void CreateNewBase()
+    {
+        if (_bots.Count < _botsAmountToCreateBase)
+            return;
+            
+        StartCoroutine(_creator.WaitResourcesForNewBase(() =>
+        {
+            Bot bot = null;
+            
+            while (bot == null)
+                bot = GetAvailableBot();
+                
+            _creator.CreateNewBase(bot, _inputReader.FlagPosition);
+            StopMonitor(bot);
+            _bots.Remove(bot);
+        }));
+    }
+    
+    private Bot GetAvailableBot()
     {
         foreach (Bot bot in _bots)
         {
             if (bot.IsWorking == false)
-            {
-                _deliveryDepartment.DeliverTo(_storage.transform.position, bot);
-                return;
-            }
+                return bot;
         }
+        
+        return null;
     }
 
-    private void StartMonitorBots()
+    private void SetBotForDelivery()
     {
-        foreach (Bot bot in _bots)
-            bot.Delivered += _deliveryDepartment.RemoveFromDeliveryList;
+        Bot bot = GetAvailableBot();
+        
+        if (bot != null)
+            _deliveryDepartment.DeliverTo(_storage.transform.position, bot);     
     }
 
-    private void StopMonitorBots()
+    private void StartMonitor(Bot bot)
     {
-        foreach (Bot bot in _bots)
-            bot.Delivered -= _deliveryDepartment.RemoveFromDeliveryList;
+        bot.Delivered += _deliveryDepartment.RemoveFromDeliveryList;
+        bot.BaseCreated += OnBaseCreated;
+        
+        _bots.Add(bot);
     }
 
-    private void OnWarehouseReplenished()
+    private void StopMonitor(Bot bot)
     {
-        WarehouseReplenished?.Invoke(_storage.AmountOfCollectable);
+        bot.Delivered -= _deliveryDepartment.RemoveFromDeliveryList;
+        bot.BaseCreated -= OnBaseCreated;
+    }
+
+    private void OnStorageChanged()
+    {
+        StorageChanged?.Invoke(_storage.AmountOfCollectable);
+    }
+    
+    private void OnBaseCreated(Bot bot)
+    {
+        StopMonitor(bot);
+        _bots.Remove(bot);
     }
 }

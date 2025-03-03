@@ -8,12 +8,12 @@ public class DisplayBaseStatistic : MonoBehaviour
 
     private void OnEnable()
     {
-        _base.WarehouseReplenished += Display;
+        _base.StorageChanged += Display;
     }
 
     private void OnDisable()
     {
-        _base.WarehouseReplenished -= Display;
+        _base.StorageChanged -= Display;
     }
 
     private void Display(int amount)

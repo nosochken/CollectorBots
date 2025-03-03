@@ -4,6 +4,7 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody), typeof(BotMovement), typeof(Collector))]
 public class Bot : MonoBehaviour
 {
+    [SerializeField] private Base _basePrefab; 
     private BotMovement _movement;
     private Collector _collector;
 
@@ -13,6 +14,8 @@ public class Bot : MonoBehaviour
     private Coroutine _coroutine;
 
     public event Action<ICollectable> Delivered;
+    public event Action<Bot> BaseCreated;
+    
 
     public bool IsWorking { get; private set; }
 
@@ -20,6 +23,8 @@ public class Bot : MonoBehaviour
     {
         _movement = GetComponent<BotMovement>();
         _collector = GetComponent<Collector>();
+        
+        gameObject.SetActive(false);
     }
 
     private void OnEnable()
@@ -43,6 +48,7 @@ public class Bot : MonoBehaviour
                     _coroutine = StartCoroutine(_movement.GoTo(_placeOfRestPosition, () =>
                     {
                         StopCoroutine(_coroutine);
+                        gameObject.SetActive(false);
                     }));
 
                 }));
@@ -55,7 +61,6 @@ public class Bot : MonoBehaviour
         _collector.CollectibleDelivered -= OnDelivered;
     }
 
-
     public void Init(Vector3 placeOfRestPosition)
     {
         _placeOfRestPosition = placeOfRestPosition;
@@ -65,6 +70,8 @@ public class Bot : MonoBehaviour
 
     public void DeliverTo(Vector3 deliveryPosition, Vector3 collectablePosition)
     {
+        gameObject.SetActive(true);
+        
         if (_coroutine != null)
             StopCoroutine(_coroutine);
 
@@ -74,6 +81,11 @@ public class Bot : MonoBehaviour
         _collector.SetTargetPosition(collectablePosition);
 
         _coroutine = StartCoroutine(_movement.GoTo(collectablePosition));
+    }
+    
+    public void CreateNewBase(Vector3 position)
+    {
+        //gameObject.SetActive(true);
     }
 
     private void OnDelivered(ICollectable collectable)

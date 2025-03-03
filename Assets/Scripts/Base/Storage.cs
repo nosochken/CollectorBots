@@ -4,7 +4,7 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody))]
 public class Storage : MonoBehaviour
 {
-    public event Action Replenished;
+    public event Action Changed;
 
     public int AmountOfCollectable { get; private set; }
 
@@ -13,7 +13,13 @@ public class Storage : MonoBehaviour
         if (other.TryGetComponent(out ICollectable collectable))
         {
             AmountOfCollectable++;
-            Replenished?.Invoke();
+            Changed?.Invoke();
         }
+    }
+    
+    public void UseResources(int amount)
+    {
+        AmountOfCollectable -= amount;
+        Changed?.Invoke();
     }
 }

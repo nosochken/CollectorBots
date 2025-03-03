@@ -6,6 +6,7 @@ public class Resource : MonoBehaviour, ICollectable, ISpawnable<Resource>
     public event Action<Resource> ReadyToSpawn;
 
     public Vector3 Position => transform.position;
+    public string Name => name;
 
     public void BePickUp(Transform collector, float holdDistance)
     {
