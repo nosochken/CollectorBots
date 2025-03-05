@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 public class Collector : MonoBehaviour
@@ -9,8 +8,6 @@ public class Collector : MonoBehaviour
     private Vector3 _currentTargetPosition;
 
     private bool _didReachTarget;
-
-    public event Action<ICollectable> CollectibleDelivered;
 
     public void SetTargetPosition(Vector3 collectablePosition)
     {
@@ -33,17 +30,19 @@ public class Collector : MonoBehaviour
                 }
             }
         }
-        
+
         return false;
     }
 
     public void PutInRightPlace()
     {
-        _currentTarget.BePlaced();
-        CollectibleDelivered?.Invoke(_currentTarget);
+        if (_currentTarget != null)
+        {
+            _currentTarget.BePlaced();
 
-        _currentTarget = null;
-        _didReachTarget = false;
+            _currentTarget = null;
+            _didReachTarget = false;
+        }
     }
 
     private void PickUp(ICollectable collectable)

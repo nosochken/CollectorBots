@@ -8,6 +8,11 @@ public class Storage : MonoBehaviour
 
     public int AmountOfCollectable { get; private set; }
 
+    private void Start()
+    {
+        Changed?.Invoke();
+    }
+
     private void OnTriggerEnter(Collider other)
     {
         if (other.TryGetComponent(out ICollectable collectable))
@@ -16,7 +21,7 @@ public class Storage : MonoBehaviour
             Changed?.Invoke();
         }
     }
-    
+
     public void UseResources(int amount)
     {
         AmountOfCollectable -= amount;

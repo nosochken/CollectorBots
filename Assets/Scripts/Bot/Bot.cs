@@ -1,21 +1,25 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody), typeof(BotMovement), typeof(Collector))]
+[RequireComponent(typeof(BaseCreator))]
 public class Bot : MonoBehaviour
 {
-    [SerializeField] private Base _basePrefab; 
+    [SerializeField] private float _positionY = 1.17f;
+
     private BotMovement _movement;
     private Collector _collector;
+    private BaseCreator _baseCreator;
 
     private Vector3 _placeOfRestPosition;
     private Vector3 _deliveryPosition;
 
     private Coroutine _coroutine;
 
-    public event Action<ICollectable> Delivered;
-    public event Action<Bot> BaseCreated;
-    
+    public event Action<Bot> DeliveredBy;
+    public event Action<Bot> NotDeliveredBy;
+    public event Action<Bot> BaseCreatedBy;
 
     public bool IsWorking { get; private set; }
 
@@ -23,13 +27,9 @@ public class Bot : MonoBehaviour
     {
         _movement = GetComponent<BotMovement>();
         _collector = GetComponent<Collector>();
-        
-        gameObject.SetActive(false);
-    }
+        _baseCreator = GetComponent<BaseCreator>();
 
-    private void OnEnable()
-    {
-        _collector.CollectibleDelivered += OnDelivered;
+        gameObject.SetActive(false);
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -38,58 +38,94 @@ public class Bot : MonoBehaviour
         {
             if (_collector.TryCollectTarget(collision))
             {
-                StopCoroutine(_coroutine);
+                if (_coroutine != null)
+                    StopCoroutine(_coroutine);
 
-                _coroutine = StartCoroutine(_movement.GoTo(_deliveryPosition, () =>
-                {
-                    _collector.PutInRightPlace();
-                    IsWorking = false;
-
-                    _coroutine = StartCoroutine(_movement.GoTo(_placeOfRestPosition, () =>
-                    {
-                        StopCoroutine(_coroutine);
-                        gameObject.SetActive(false);
-                    }));
-
-                }));
+                _coroutine = StartCoroutine(ExecuteDeliverySequence());
             }
         }
-    }
-
-    private void OnDisable()
-    {
-        _collector.CollectibleDelivered -= OnDelivered;
     }
 
     public void Init(Vector3 placeOfRestPosition)
     {
         _placeOfRestPosition = placeOfRestPosition;
         transform.position = new Vector3(
-            _placeOfRestPosition.x, transform.position.y, _placeOfRestPosition.z);
+            _placeOfRestPosition.x, _positionY, _placeOfRestPosition.z);
     }
 
     public void DeliverTo(Vector3 deliveryPosition, Vector3 collectablePosition)
     {
-        gameObject.SetActive(true);
-        
-        if (_coroutine != null)
-            StopCoroutine(_coroutine);
-
-        IsWorking = true;
+        Work();
 
         _deliveryPosition = deliveryPosition;
         _collector.SetTargetPosition(collectablePosition);
 
-        _coroutine = StartCoroutine(_movement.GoTo(collectablePosition));
-    }
-    
-    public void CreateNewBase(Vector3 position)
-    {
-        //gameObject.SetActive(true);
+        _coroutine = StartCoroutine(ReachCollectablePosition(collectablePosition));
     }
 
-    private void OnDelivered(ICollectable collectable)
+    public void CreateNewBase(Vector3 newBasePosition)
     {
-        Delivered?.Invoke(collectable);
+        Work();
+
+        _coroutine = StartCoroutine(ExecuteCreatorSequence(newBasePosition));
+    }
+
+    public void SuspendWork()
+    {
+        IsWorking = false;
+
+        if (_coroutine != null)
+            StopCoroutine(_coroutine);
+
+        _collector.PutInRightPlace();
+    }
+
+    private void Work()
+    {
+        gameObject.SetActive(true);
+
+        if (_coroutine != null)
+            StopCoroutine(_coroutine);
+
+        IsWorking = true;
+    }
+
+    private IEnumerator FinishWork()
+    {
+        IsWorking = false;
+
+        yield return _movement.GoTo(_placeOfRestPosition);
+
+        gameObject.SetActive(false);
+    }
+
+    private IEnumerator ExecuteDeliverySequence()
+    {
+        yield return _movement.GoTo(_deliveryPosition);
+
+        _collector.PutInRightPlace();
+        DeliveredBy.Invoke(this);
+
+        _coroutine = StartCoroutine(FinishWork());
+    }
+
+    private IEnumerator ExecuteCreatorSequence(Vector3 newBasePosition)
+    {
+        yield return _movement.GoTo(newBasePosition);
+
+        Base newBase = _baseCreator.Create(newBasePosition);
+        BaseCreatedBy?.Invoke(this);
+
+        newBase.Init(this);
+
+        _coroutine = StartCoroutine(FinishWork());
+    }
+
+    private IEnumerator ReachCollectablePosition(Vector3 collectablePosition)
+    {
+        yield return _movement.GoTo(collectablePosition);
+
+        NotDeliveredBy?.Invoke(this);
+        _coroutine = StartCoroutine(FinishWork());
     }
 }

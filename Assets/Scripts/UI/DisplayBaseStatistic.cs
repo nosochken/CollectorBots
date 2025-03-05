@@ -3,21 +3,40 @@ using UnityEngine;
 
 public class DisplayBaseStatistic : MonoBehaviour
 {
-    [SerializeField] private Base _base;
-    [SerializeField] private TextMeshProUGUI _resourcesAmountInBae;
+    [SerializeField] private TextMeshProUGUI _resourcesAmountInBase;
+    [SerializeField] private TextMeshProUGUI _botsAmountInBase;
+    
+    private Base _base;
+
+    private void Awake()
+    {
+        _base = GetComponentInParent<Base>();
+    }
 
     private void OnEnable()
     {
-        _base.StorageChanged += Display;
+        _base.StorageChanged += OnStorageChanged;
+        _base.BotsAmountChanged += OnBotsAmountChanged;
     }
 
     private void OnDisable()
     {
-        _base.StorageChanged -= Display;
+        _base.StorageChanged -= OnStorageChanged;
+        _base.BotsAmountChanged -= OnBotsAmountChanged;
+    }
+    
+    private void OnStorageChanged(int amount)
+    {
+        Display(_resourcesAmountInBase, amount);
+    }
+    
+    private void OnBotsAmountChanged(int amount)
+    {
+        Display(_botsAmountInBase, amount);
     }
 
-    private void Display(int amount)
+    private void Display(TextMeshProUGUI text, int amount)
     {
-        _resourcesAmountInBae.text = amount.ToString();
+        text.text = amount.ToString();
     }
 }

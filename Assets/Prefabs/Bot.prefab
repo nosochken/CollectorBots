@@ -16,6 +16,7 @@ GameObject:
   - component: {fileID: 7682800670310256123}
   - component: {fileID: 4613853743798775532}
   - component: {fileID: 8677726438336816859}
+  - component: {fileID: 1486748203264771604}
   m_Layer: 7
   m_Name: Bot
   m_TagString: Untagged
@@ -66,7 +67,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 8d6c6b21760c74b26a44570bf53c9fdf, type: 2}
+  - {fileID: 2100000, guid: ddda4dfa28dc94eec9e08a46e54d7a58, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -176,4 +177,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: af0e7ce9957a34f29a0f96a3c77ffe8e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _basePrefab: {fileID: 8883867105602483292, guid: f4a394e11ce0b4ff5b7fd3e6d5a84b38, type: 3}
+  positionY: 1.17
+--- !u!114 &1486748203264771604
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7473559942961860318}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 05767bea67ffe4f4f9b5c8ef607949e2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _basePrefab: {fileID: 2624940705048910575, guid: dc16a09fe0c1743199793a74c879a621, type: 3}

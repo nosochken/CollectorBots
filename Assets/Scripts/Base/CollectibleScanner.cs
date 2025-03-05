@@ -7,7 +7,7 @@ using UnityEngine;
 public class CollectableScanner : MonoBehaviour
 {
     [SerializeField] private LayerMask _collectableLayerMask;
-    [SerializeField, Min(1)] private float _scanRadius = 20f;
+    [SerializeField, Min(1)] private float _scanRadius = 25f;
     [SerializeField, Min(1)] private float _scanDelay;
 
     private List<ICollectable> _discoveredCollectable;
