@@ -38,20 +38,13 @@ public class Creator : MonoBehaviour
 
     public IEnumerator WaitResourcesForNewBot()
     {
-        int requiredAmount = GetRequiredResourcesAmount(_resourcesAmountToCreateBot);
-        yield return new WaitUntil(() => _storage.AmountOfCollectable >= requiredAmount);
+        yield return new WaitUntil(() => _storage.AmountOfCollectable >= _resourcesAmountToCreateBot);
     }
 
     public IEnumerator WaitResourcesForNewBase(Action onComplete)
     {
-        int requiredAmount = GetRequiredResourcesAmount(_resourcesAmountToCreateBase);
-        yield return new WaitUntil(() => _storage.AmountOfCollectable >= requiredAmount);
-        
-        onComplete?.Invoke();
-    }
+        yield return new WaitUntil(() => _storage.AmountOfCollectable >= _resourcesAmountToCreateBase);
 
-    private int GetRequiredResourcesAmount(int resourcesAmountForCreate)
-    {
-        return _storage.AmountOfCollectable + resourcesAmountForCreate;
+        onComplete?.Invoke();
     }
 }

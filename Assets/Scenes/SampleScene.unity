@@ -569,6 +569,7 @@ GameObject:
   m_Component:
   - component: {fileID: 712084778}
   - component: {fileID: 712084777}
+  - component: {fileID: 712084779}
   m_Layer: 0
   m_Name: InputReader
   m_TagString: Untagged
@@ -588,8 +589,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cda3b17dc7f8f4b6c80559c04169b14f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _flagPrefab: {fileID: 7153051665346874026, guid: 6563c345228cf4a409b44fd05b0c2d92, type: 3}
-  _maxDistance: 30
+  _maxDistance: 40
 --- !u!4 &712084778
 Transform:
   m_ObjectHideFlags: 0
@@ -605,6 +605,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &712084779
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 712084776}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cca619f028b3542c59557b6ff4e70561, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _flagPrefab: {fileID: 7153051665346874026, guid: 6563c345228cf4a409b44fd05b0c2d92, type: 3}
+  _inputReader: {fileID: 712084777}
 --- !u!1 &848371247
 GameObject:
   m_ObjectHideFlags: 0
@@ -1303,9 +1317,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _prefab: {fileID: 8129636335803538578, guid: cdcb2e325668644bd93a6ffc75d9b1a3, type: 3}
   _plane: {fileID: 1154009984}
-  _spawnDelay: 2
-  _poolCapacity: 10
-  _poolMaxSize: 10
+  _spawnDelay: 1.5
+  _spawnPositionY: 0.2
+  _poolCapacity: 30
+  _poolMaxSize: 30
 --- !u!1 &2011339554
 GameObject:
   m_ObjectHideFlags: 0
